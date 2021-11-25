@@ -161,8 +161,8 @@ namespace VRDemo.Player
 			if (controller.TryGetFeatureValue(CommonUsages.primary2DAxisTouch, out bool at))
 			{
 				if (state.axisTouched == true && at == true) { onAxisTouchHold?.Invoke(device); }
-				else if (state.axisTouched == false && a == true) { onAxisTouchStart?.Invoke(device); state.axisTouched = true; }
-				else if (state.axisTouched == true && a == false) { onAxisTouchStart?.Invoke(device); state.axisTouched = false; }
+				else if (state.axisTouched == false && at == true) { onAxisTouchStart?.Invoke(device); state.axisTouched = true; }
+				else if (state.axisTouched == true && at == false) { onAxisTouchEnd?.Invoke(device); state.axisTouched = false; }
 			}
 
 			if (controller.TryGetFeatureValue(CommonUsages.primary2DAxis, out Vector2 ax))

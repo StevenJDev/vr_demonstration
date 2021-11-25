@@ -22,7 +22,5 @@ namespace VRDemo.Player
 			oneArrow.sharedMaterial = material;
 			threeArrows.sharedMaterial = material;
 		}
-
-
 	}
 }

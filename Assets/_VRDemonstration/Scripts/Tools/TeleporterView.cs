@@ -46,12 +46,16 @@ namespace VRDemo.Player
 			{
 				case TeleportResult.Validity.NO_HIT: resultColor = colorNoHit; break;
 				case TeleportResult.Validity.HIT: resultColor = colorHit; break;
-				case TeleportResult.Validity.VALID_HIT: resultColor = colorValidHit; break;
+				case TeleportResult.Validity.VALID_HIT:
+					resultColor = colorValidHit;
+					marker.gameObject.SetActive(true);
+					marker.transform.position = teleportResult.Location;
+					break;
 			}
 
 			lineRenderer.material.SetColor("_Color", resultColor);
 			lineRenderer.startColor = resultColor;
-			lineRenderer.endColor = Color.black;
+			lineRenderer.endColor = new Color(resultColor.r, resultColor.g, resultColor.b, 0f);
 
 			lineRenderer.enabled = true;
 		}

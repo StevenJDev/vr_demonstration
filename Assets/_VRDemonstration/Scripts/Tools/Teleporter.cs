@@ -54,6 +54,7 @@ namespace VRDemo.Player
 		private PlayerController player;
 		private TeleporterView view;
 		private Vector2 inputAxis;
+		private float inputAxisChangeLastTime = 0f;
 
 		private bool isTeleporting = false;
 		
@@ -75,11 +76,12 @@ namespace VRDemo.Player
 
 		public override void Equip(PlayerController player, XRInputDevice device)
 		{
+			Debug.Log($"Equipped Teleporter on {device}");
 			this.device = device;
 			this.player = player;
 
-			player.Input.onAxisTouchStart += OnAxisTouchStart;
-			player.Input.onAxisTouchEnd += OnAxisTouchEnd;
+			player.Input.onTriggerClickStart += OnTriggerClickStart;
+			player.Input.onTriggerClickEnd += OnTriggerClickEnd;
 			player.Input.onAxisChanged += onAxisChanged;
 
 			this.enabled = true;
@@ -92,8 +94,8 @@ namespace VRDemo.Player
 				AbortTeleport();
 			}
 
-			player.Input.onAxisTouchStart -= OnAxisTouchStart;
-			player.Input.onAxisTouchEnd -= OnAxisTouchEnd;
+			player.Input.onTriggerClickStart -= OnTriggerClickStart;
+			player.Input.onTriggerClickEnd -= OnTriggerClickEnd;
 			player.Input.onAxisChanged -= onAxisChanged;
 			player = null;
 
@@ -101,7 +103,7 @@ namespace VRDemo.Player
 			view.enabled = false;
 		}
 
-		private void OnAxisTouchStart(XRInputDevice device)
+		private void OnTriggerClickStart(XRInputDevice device)
 		{
 			if (this.device == device && !isTeleporting)
 			{
@@ -109,11 +111,12 @@ namespace VRDemo.Player
 			}
 		}
 
-		private void OnAxisTouchEnd(XRInputDevice device)
+		private void OnTriggerClickEnd(XRInputDevice device)
 		{
 			if (this.device == device && isTeleporting)
 			{
-				EndTeleport();
+				if (inputAxis.magnitude < .5f) { AbortTeleport(); }
+				else { EndTeleport(); }
 			}	
 		}
 
@@ -121,18 +124,31 @@ namespace VRDemo.Player
 		{
 			if (this.device == device)
 			{
-				inputAxis = axis.normalized;
+				if (axis.magnitude > .5f)
+				{
+					inputAxisChangeLastTime = Time.time;
+					inputAxis = axis.normalized;
+				}
+				else
+				{
+					if (inputAxisChangeLastTime > Time.time + .2f)
+					{
+						inputAxis = axis.normalized;
+					}
+				}
 			}
 		}
 
 		private void StartTeleport()
 		{
+			Debug.Log("[Teleporter] StartTeleport()");
 			isTeleporting = true;
 			view.enabled = true;
 		}
 
 		private void AbortTeleport()
 		{
+			Debug.Log("[Teleporter] AbortTeleport()");
 			isTeleporting = false;
 			view.enabled = false;
 		}
@@ -146,6 +162,7 @@ namespace VRDemo.Player
 
 		private void TryTeleport(TeleportResult result)
 		{
+			Debug.Log("[Teleporter] TryTeleport()");
 			if (result.validty == TeleportResult.Validity.VALID_HIT)
 			{
 				player.Teleport(result.Location, result.Rotation);
@@ -154,7 +171,7 @@ namespace VRDemo.Player
 
 		private TeleportResult GetArcPoints()
 		{
-			view.Marker.enabled = false;
+			if (view != null) { view.Marker.enabled = false; }
 
 			List<Vector3> arcPoints = new List<Vector3>();
 			List<float> arcPointsSqrDistances = new List<float>();
@@ -184,12 +201,16 @@ namespace VRDemo.Player
 					result.validty = TeleportResult.Validity.HIT;
 
 					if (IsInLayer(validTeleportMask, hit.collider.gameObject.layer)
-						&& (Vector3.Dot(player.transform.up, hit.normal) > maxUpDeviation))
+						&& (Vector3.Dot(player != null ? player.transform.up : Vector3.up, hit.normal) > maxUpDeviation))
 					{
 						result.validty = TeleportResult.Validity.VALID_HIT;
-						view.Marker.enabled = true;
-						view.Marker.transform.position = hit.point;
-						view.Marker.transform.rotation = Quaternion.Euler(-90f, 0f, 0f);
+						//result.Rotation = Quaternion.Euler(new Vector3())
+						if (view != null)
+						{
+							view.Marker.enabled = true;
+							view.Marker.transform.position = hit.point;
+							view.Marker.transform.rotation = Quaternion.Euler(-90f, 0f, 0f);
+						}
 					}
 					break;
 				}
@@ -210,6 +231,25 @@ namespace VRDemo.Player
 		private bool IsInLayer(LayerMask mask, int layer)
 		{
 			return ((mask & (1 << layer)) != 0);
+		}
+
+		private void OnDrawGizmosSelected()
+		{
+			TeleportResult teleport = GetArcPoints();
+
+			switch (teleport.validty)
+			{
+				case TeleportResult.Validity.NO_HIT: Gizmos.color = Color.red; break;
+				case TeleportResult.Validity.HIT: Gizmos.color = Color.yellow; break;
+				case TeleportResult.Validity.VALID_HIT: Gizmos.color = Color.green; break;
+			}
+
+			int count = teleport.positions.Length;
+			for (int i = 0; i < count; i++)
+			{
+				float size = Mathf.InverseLerp(teleport.totalSqrDistance, 0f, teleport.sqrDistances[i]) * .1f;
+				Gizmos.DrawWireSphere(teleport.positions[i], size + .025f);
+			}
 		}
 	}
 }
