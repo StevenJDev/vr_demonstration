@@ -40,7 +40,7 @@ namespace VRDemo.Paint
 			}
         }
 
-		private void Awake()
+		private void Start()
 		{
 			BrushSettings = PaintManager.Instance.BrushSets[0].Brushes[0];
 			StrokeSettings = PaintManager.Instance.Strokes[0];
