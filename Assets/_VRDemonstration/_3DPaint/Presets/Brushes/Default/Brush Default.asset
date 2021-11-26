@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   brushName: Default
   material: {fileID: 2100000, guid: 78bbcb7009224284590f8369b774ba50, type: 2}
-  startColor: {r: 1, g: 0, b: 0.35, a: 1}
+  startColor: {r: 0.08395326, g: 1, b: 0, a: 1}
   endColor: {r: 1, g: 0, b: 0.34901962, a: 1}
-  startWidth: 0.1
-  endWidth: 0
+  startWidth: 0.02
+  endWidth: 0.02
