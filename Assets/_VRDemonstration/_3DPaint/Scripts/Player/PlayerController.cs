@@ -20,7 +20,7 @@ namespace VRDemo.Paint
 		{
 			if (device == XRInputDevice.RIGHT)
 			{
-				rightPainter.StartBrushStroke();
+				rightPainter.StartBrushStroke(device);
 			}
 		}
 
@@ -28,7 +28,7 @@ namespace VRDemo.Paint
 		{
 			if (device == XRInputDevice.RIGHT)
 			{
-				rightPainter.EndBrushStroke();
+				rightPainter.EndBrushStroke(device);
 			}
 		}
 	}

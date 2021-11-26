@@ -18,7 +18,9 @@ namespace VRDemo.Player
 
 		public enum RotationMode { SMOOTH, SNAP }
 		[SerializeField] private RotationMode rotationStyle;
+		[SerializeField] private float turnSpeed = 60f;
 		[SerializeField] private float snapAngle = 15f;
+		private bool hasSnapped = false;
 
 		protected PlayerInputHandler inputHandler;
 		public PlayerInputHandler Input{ get { return inputHandler; } }
@@ -58,7 +60,7 @@ namespace VRDemo.Player
 		{
 			inputHandler = gameObject.AddComponent<PlayerInputHandler>();
 			xrRig = GetComponent<XRRig>();
-
+			teleporter.Equip(this, XRInputDevice.LEFT);
 			if (rightHandTool != null) { rightHandTool.Equip(this, XRInputDevice.RIGHT); }
 			if (leftHandTool != null) { leftHandTool.Equip(this, XRInputDevice.LEFT); }
 		}
@@ -96,7 +98,24 @@ namespace VRDemo.Player
 
 		private void HandleTurning(Vector2 axis)
 		{
-
+			switch (rotationStyle)
+			{
+				case RotationMode.SMOOTH:
+					XRRig.RotateAroundCameraUsingRigUp(axis.x * turnSpeed * Time.deltaTime);
+					break;
+				case RotationMode.SNAP:
+					if (!hasSnapped && Mathf.Abs(axis.x) > .5f)
+					{
+						XRRig.RotateAroundCameraUsingRigUp((axis.x > 0 ? 1f : -1f) * snapAngle);
+						hasSnapped = true;
+					}
+					else if (hasSnapped && Mathf.Abs(axis.x) < .5f)
+					{
+						hasSnapped = false;
+					}
+					break;
+			}
+			
 		}
 
 		public virtual void Teleport(Vector3 location, Quaternion rotation)

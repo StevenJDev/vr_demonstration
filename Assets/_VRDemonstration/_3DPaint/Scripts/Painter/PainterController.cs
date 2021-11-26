@@ -1,9 +1,10 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using VRDemo.Player;
 
 namespace VRDemo.Paint
 {
-	public class PainterController : MonoBehaviour
+	public class PainterController : Tool
     {
         public BrushSettings BrushSettings { get; set; }
 
@@ -16,7 +17,22 @@ namespace VRDemo.Paint
 
         private Vector3 lastPointPosition;
 
-        private void OnValidate()
+		XRInputDevice device;
+
+		public override void Equip(Player.PlayerController player, XRInputDevice device)
+		{
+			this.device = device;
+			player.Input.onTriggerClickStart += StartBrushStroke;
+			player.Input.onTriggerClickEnd += EndBrushStroke;
+		}
+
+		public override void Unequip(Player.PlayerController player, XRInputDevice device)
+		{
+			player.Input.onTriggerClickStart -= StartBrushStroke;
+			player.Input.onTriggerClickEnd -= EndBrushStroke;
+		}
+
+		private void OnValidate()
         {
             if (PaintManager.Instance == null)
 			{
@@ -30,26 +46,34 @@ namespace VRDemo.Paint
 			StrokeSettings = PaintManager.Instance.Strokes[0];
 		}
 
-		public void StartBrushStroke()
+		public void StartBrushStroke(XRInputDevice device)
 		{
-            if (currentPainting == null)
+			Debug.Log("Starting brush stroke");
+			if (this.device == device)
 			{
-                currentPainting = PaintManager.Instance.CreatePainting(transform.position);
-			}
+				if (currentPainting == null)
+				{
+					currentPainting = PaintManager.Instance.CreatePainting(transform.position);
+				}
 
-            if (currentPainting.CurrentStroke == null)
-			{
-                currentPainting.AddBrushStroke(BrushSettings);
-			}
+				if (currentPainting.CurrentStroke == null)
+				{
+					currentPainting.AddBrushStroke(BrushSettings);
+				}
 
-            IsPainting = true;
+				IsPainting = true;
+			}
 		}
 
-        public void EndBrushStroke()
+        public void EndBrushStroke(XRInputDevice device)
 		{
-            IsPainting = false;
-            PlacePoint();
-            CurrentPainting.CurrentStroke = null;
+			Debug.Log("Ending brush stroke");
+			if (this.device == device)
+			{
+				IsPainting = false;
+				PlacePoint();
+				CurrentPainting.CurrentStroke = null;
+			}
 		}
 
         private void PlacePoint()

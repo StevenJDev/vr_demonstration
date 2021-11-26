@@ -403,6 +403,7 @@ MonoBehaviour:
   movementSpeed: 5
   easeAmount: 0.1
   rotationStyle: 0
+  turnSpeed: 60
   snapAngle: 15
   teleporter: {fileID: 1285167079403062662}
   rightHandTool: {fileID: 0}

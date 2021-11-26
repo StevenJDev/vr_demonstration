@@ -342,10 +342,10 @@ MonoBehaviour:
   rotationMode: 1
   validTeleportMask:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 1
   collisionMask:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 1
   maxUpDeviation: 0.5
   maxDistance: 10
   gravity: {x: 0, y: 0, z: 0}
